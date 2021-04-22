@@ -63,30 +63,30 @@ function renderCircles(circlesGroup, newXScale, chosenXAxis) {
 }
 
 // function used for updating circles group with new tooltip
-// function updateToolTip(chosenXAxis, circlesGroup) {
+function updateToolTip(chosenXAxis, circlesGroup) {
 
-//     var toolTip = d3.tip()
-//         .attr("class", "tooltip")
-//         .offset([80, -60])
-//         .html(function (d) {
-//             return (`${d.state}<br> Income:${d.income}<br> Percent with Health Care:${d.healthcare}<br> Percent obese:${d.obesity}`);
-//         });
+    var toolTip = d3.tip()
+        .attr("class", "tooltip")
+        .offset([80, -60])
+        .html(function (d) {
+            return (`${d.state}<br> Income:${d.income}<br> Percent with Health Care:${d.healthcare}<br> Percent obese:${d.obesity}`);
+        });
 
-//     circlesGroup.call(toolTip);
+    circlesGroup.call(toolTip);
 
-//     circlesGroup.on("mouseover", function (data) {
-//         toolTip.show(data);
-//     })
-//         // onmouseout event
-//         .on("mouseout", function (data, index) {
-//             toolTip.hide(data);
-//         });
+    circlesGroup.on("mouseover", function (data) {
+        toolTip.show(data);
+    })
+        // onmouseout event
+        .on("mouseout", function (data, index) {
+            toolTip.hide(data);
+        });
 
-//     return circlesGroup;
-// }
+    return circlesGroup;
+}
 
 // retrieve data and execute populating data into graph
-d3.csv("data.csv").then(function (stateData, err) {
+d3.csv("../../data/data.csv").then(function (stateData, err) {
     if (err) throw err;
 
     // parse data
@@ -99,8 +99,13 @@ d3.csv("data.csv").then(function (stateData, err) {
     // xLinearScale function 
     var xLinearScale = xScale(stateData, chosenXAxis);
 
+    // yLinearScale function
+    var yLinearScale = d3.scaleLinear()
+        .domain([0,d3.max(stateData, d=> d.income)])
+        .range([height,0]);
+
     // create initial axis functions
-    var botomAxis = d3.axisBottom(xLinearScale);
+    var bottomAxis = d3.axisBottom(xLinearScale);
     var leftAxis = d3.axisLeft(yLinearScale)
 
     // append x axis
@@ -173,7 +178,7 @@ d3.csv("data.csv").then(function (stateData, err) {
                 circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis);
 
                 // // updates tooltips with new info
-                // circlesGroup = updateToolTip(chosenXAxis, circlesGroup);
+                circlesGroup = updateToolTip(chosenXAxis, circlesGroup);
 
                 // changes classes to change bold text
                 if (chosenXAxis === "obese") {
