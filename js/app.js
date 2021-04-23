@@ -62,6 +62,17 @@ function renderCircles(circlesGroup, newXScale, chosenXAxis) {
     return circlesGroup;
 }
 
+// function used for updating circles with labels with a transition
+// new circles
+function updateCircleLabels(circleLabels, newXScale, chosenXAxis){
+
+    circleLabels.transition()
+        .duration(1000)
+        .attr("x", d => newXScale(d[chosenXAxis]));
+
+    return circleLabels;
+}
+
 // function used for updating circles group with new tooltip
 function updateToolTip(chosenXAxis, circlesGroup) {
 
@@ -193,11 +204,7 @@ d3.csv("../../data/data.csv").then(function (stateData, err) {
                 circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis);
 
                 // update circle labels with new x values
-                circleLabels     
-                    .attr("x", d => xLinearScale(d[chosenXAxis]))
-                    .attr("y", d => yLinearScale(d.income))
-                    .text(d => d.abbr)
-                    .classed("stateText", true);
+                circleLabels = updateCircleLabels(circleLabels, xLinearScale, chosenXAxis)
 
                 // changes classes to change bold text
                 if (chosenXAxis === "obesity") {
