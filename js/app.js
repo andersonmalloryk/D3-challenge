@@ -2,7 +2,7 @@ console.log("reading app.js")
 
 // set up basic svg
 var svgWidth = 960;
-var svgHeight = 500;
+var svgHeight = 750;
 
 var margin = {
     top: 20,
@@ -66,16 +66,16 @@ function renderCircles(circlesGroup, newXScale, chosenXAxis) {
 function updateToolTip(chosenXAxis, circlesGroup) {
 
     var toolTip = d3.tip()
-        .attr("class", "tooltip")
+        .attr("class", "d3-tip")
         .offset([80, -60])
         .html(function (d) {
-            return (`${d.state}<br> Income:${d.income}<br> Percent with Health Care:${d.healthcare}<br> Percent obese:${d.obesity}`);
+            return (`${d.state}<br> Income: $${d.income}<br> Percent with Health Care: ${d.healthcare}% <br> Percent obese: ${d.obesity}%`);
         });
 
     circlesGroup.call(toolTip);
 
     circlesGroup.on("mouseover", function (data) {
-        toolTip.show(data);
+        toolTip.show(data, this);
     })
         // onmouseout event
         .on("mouseout", function (data, index) {
@@ -101,7 +101,7 @@ d3.csv("../../data/data.csv").then(function (stateData, err) {
 
     // yLinearScale function
     var yLinearScale = d3.scaleLinear()
-        .domain([0,d3.max(stateData, d=> d.income)])
+        .domain([(d3.min(stateData, d=> d.income)-1500), (d3.max(stateData, d=> d.income)+1500)])
         .range([height,0]);
 
     // create initial axis functions
@@ -115,6 +115,10 @@ d3.csv("../../data/data.csv").then(function (stateData, err) {
         .call(bottomAxis);
 
     // append y axis
+    chartGroup.append("g")
+        .call(leftAxis);
+
+    // append initial circles
     var circlesGroup = chartGroup.selectAll("circle")
         .data(stateData)
         .enter()
@@ -122,8 +126,19 @@ d3.csv("../../data/data.csv").then(function (stateData, err) {
         .attr("cx", d => xLinearScale(d[chosenXAxis]))
         .attr("cy", d => yLinearScale(d.income))
         .attr("r", 20)
-        .attr("fill", "blue")
-        .attr("opacity", ".5");
+        .classed("stateCircle", true);
+
+    // add the circle labels
+    var circleLabels = chartGroup.selectAll(null)
+        .data(stateData)
+        .enter()
+        .append("text");
+    
+    circleLabels   
+        .attr("x", d => xLinearScale(d[chosenXAxis]))
+        .attr("y", d => yLinearScale(d.income))
+        .text(d => d.abbr)
+        .classed("stateText", true);
 
     // create group for two x-axis labels
     var labelsGroup = chartGroup.append("g")
@@ -153,7 +168,7 @@ d3.csv("../../data/data.csv").then(function (stateData, err) {
         .text("Income");
 
     // // updateToolTip function above csv import
-    // var circlesGroup = updateToolTip(chosenXAxis, circlesGroup);
+    var circlesGroup = updateToolTip(chosenXAxis, circlesGroup);
 
     // x axis labels event listener
     labelsGroup.selectAll("text")
@@ -162,10 +177,10 @@ d3.csv("../../data/data.csv").then(function (stateData, err) {
             var value = d3.select(this).attr("value");
             if (value !== chosenXAxis) {
 
+                //console.log(this)
+
                 // replaces chosenXAxis with value
                 chosenXAxis = value;
-
-                // console.log(chosenXAxis)
 
                 // functions here found above csv import
                 // updates x scale for new data
@@ -177,11 +192,15 @@ d3.csv("../../data/data.csv").then(function (stateData, err) {
                 // updates circles with new x values
                 circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis);
 
-                // // updates tooltips with new info
-                circlesGroup = updateToolTip(chosenXAxis, circlesGroup);
+                // update circle labels with new x values
+                circleLabels     
+                    .attr("x", d => xLinearScale(d[chosenXAxis]))
+                    .attr("y", d => yLinearScale(d.income))
+                    .text(d => d.abbr)
+                    .classed("stateText", true);
 
                 // changes classes to change bold text
-                if (chosenXAxis === "obese") {
+                if (chosenXAxis === "obesity") {
                     obesityLabel
                         .classed("active", true)
                         .classed("inactive", false);
