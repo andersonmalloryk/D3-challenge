@@ -1,8 +1,8 @@
 console.log("reading app.js")
 
 // set up basic svg
-var svgWidth = 960;
-var svgHeight = 750;
+var svgWidth = 1200;
+var svgHeight = 900;
 
 var margin = {
     top: 20,
@@ -32,8 +32,8 @@ var chosenXAxis = "obesity";
 function xScale(stateData, chosenXAxis) {
     // create scales
     var xLinearScale = d3.scaleLinear()
-        .domain([d3.min(stateData, d => d[chosenXAxis]) * 0.8,
-        d3.max(stateData, d => d[chosenXAxis]) * 1.2
+        .domain([d3.min(stateData, d => d[chosenXAxis]) * 0.9,
+        d3.max(stateData, d => d[chosenXAxis]) * 1.05
         ])
         .range([0, width]);
 
@@ -73,24 +73,33 @@ function updateCircleLabels(circleLabels, newXScale, chosenXAxis){
     return circleLabels;
 }
 
-// function used for updating circles group with new tooltip
+// function used for updating circles group with tooltip
 function updateToolTip(chosenXAxis, circlesGroup) {
 
     var toolTip = d3.tip()
         .attr("class", "d3-tip")
-        .offset([80, -60])
+        .offset([100, -100])
         .html(function (d) {
-            return (`${d.state}<br> Income: $${d.income}<br> Percent with Health Care: ${d.healthcare}% <br> Percent obese: ${d.obesity}%`);
+            return (`${d.state}<br> Income: $${d.income}<br> 
+            Percent without Health Care: ${d.healthcare}% <br> 
+            Percent obese: ${d.obesity}%`);
         });
 
     circlesGroup.call(toolTip);
 
     circlesGroup.on("mouseover", function (data) {
-        toolTip.show(data, this);
+        toolTip
+            .show(data, this)
+            .style("stroke","black")
+            .style("opacity",1)
+        d3.select(this)
+            .style("stroke", "black")
     })
         // onmouseout event
         .on("mouseout", function (data, index) {
-            toolTip.hide(data);
+            toolTip.hide(data, this);
+            d3.select(this)
+                .style("stroke","white")
         });
 
     return circlesGroup;
@@ -112,7 +121,8 @@ d3.csv("../../data/data.csv").then(function (stateData, err) {
 
     // yLinearScale function
     var yLinearScale = d3.scaleLinear()
-        .domain([(d3.min(stateData, d=> d.income)-1500), (d3.max(stateData, d=> d.income)+1500)])
+        .domain([(d3.min(stateData, d=> d.income)-1500), 
+            (d3.max(stateData, d=> d.income)+1500)])
         .range([height,0]);
 
     // create initial axis functions
@@ -167,7 +177,7 @@ d3.csv("../../data/data.csv").then(function (stateData, err) {
         .attr("y", 40)
         .attr("value", "healthcare") // value to grab for event listener
         .classed("inactive", true)
-        .text("Health Care (as %)");
+        .text("Lack Health Care (as %)");
 
     // append y axis
     chartGroup.append("text")
