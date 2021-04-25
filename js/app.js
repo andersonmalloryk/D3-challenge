@@ -106,7 +106,7 @@ function updateToolTip(chosenXAxis, circlesGroup) {
 }
 
 // retrieve data and execute populating data into graph
-d3.csv("../../data/data.csv").then(function (stateData, err) {
+d3.csv("../data/data.csv").then(function (stateData, err) {
     if (err) throw err;
 
     // parse data
